@@ -65,7 +65,7 @@ Split pane support:
 | **stacked-bar-chart** | Composition breakdowns |
 | **sequence-diagram** | API flows, protocol exchanges |
 
-See `skill/SKILL.md` for full JSON schemas and examples.
+See `SKILL.md` for full JSON schemas and examples.
 
 ## How It Works
 
@@ -124,8 +124,7 @@ terminal-visualizer/
 │       ├── svg-renderer.ts       # SVG generation + highlight
 │       ├── kitty-renderer.ts     # Kitty protocol + resvg-js
 │       └── terminal-image.ts     # iTerm2/Kitty/Sixel protocols
-├── skill/
-│   └── SKILL.md                  # Claude Code skill definition
+├── SKILL.md                        # Claude Code skill definition
 ├── CLAUDE.md
 └── package.json
 ```

@@ -22,12 +22,18 @@ npm prune --production
 # Create symlinks in a directory that's on PATH
 BIN_DIR="/usr/local/bin"
 if [ ! -w "$BIN_DIR" ]; then
-  echo "Need sudo to symlink into $BIN_DIR"
-  sudo ln -sf "$INSTALL_DIR/build/cli.js" "$BIN_DIR/terminal-visualizer"
-  sudo ln -sf "$INSTALL_DIR/build/cli.js" "$BIN_DIR/viz"
-else
-  ln -sf "$INSTALL_DIR/build/cli.js" "$BIN_DIR/terminal-visualizer"
-  ln -sf "$INSTALL_DIR/build/cli.js" "$BIN_DIR/viz"
+  # Fall back to ~/.local/bin (no sudo needed)
+  BIN_DIR="$HOME/.local/bin"
+  mkdir -p "$BIN_DIR"
+fi
+ln -sf "$INSTALL_DIR/build/cli.js" "$BIN_DIR/terminal-visualizer"
+ln -sf "$INSTALL_DIR/build/cli.js" "$BIN_DIR/viz"
+
+# Ensure BIN_DIR is on PATH
+if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
+  echo ""
+  echo "NOTE: Add $BIN_DIR to your PATH:"
+  echo "  export PATH=\"$BIN_DIR:\$PATH\""
 fi
 
 echo ""

@@ -123,7 +123,7 @@ function readStdin(): Promise<string> {
 
 function installSkill() {
   const thisFile = fileURLToPath(import.meta.url);
-  const skillSrc = path.resolve(path.dirname(thisFile), '..', 'skill', 'SKILL.md');
+  const skillSrc = path.resolve(path.dirname(thisFile), '..', 'SKILL.md');
   const skillDir = path.join(os.homedir(), '.claude', 'skills', 'terminal-visualizer');
   const skillDst = path.join(skillDir, 'SKILL.md');
 
