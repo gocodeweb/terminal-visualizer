@@ -8,7 +8,7 @@ Interactive terminal visualizations for Claude Code. Pipe JSON, get a pixel-perf
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/gocodeweb/terminal-visualizer/main/install.sh | bash
-terminal-visualizer install-skill    # register Claude Code skill
+terminal-visualizer install-skill    # register skill for Claude Code, Cursor, Codex & more
 ```
 
 ## Usage

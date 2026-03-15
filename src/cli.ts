@@ -14,8 +14,8 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import * as os from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { execSync } from 'node:child_process';
 import { showInteractiveTUI } from './tui/screen.js';
 import { generateSVG } from './image/svg-renderer.js';
 import { displayImageInTerminal } from './image/terminal-image.js';
@@ -124,18 +124,19 @@ function readStdin(): Promise<string> {
 function installSkill() {
   const thisFile = fileURLToPath(import.meta.url);
   const skillSrc = path.resolve(path.dirname(thisFile), '..', 'SKILL.md');
-  const skillDir = path.join(os.homedir(), '.claude', 'skills', 'terminal-visualizer');
-  const skillDst = path.join(skillDir, 'SKILL.md');
 
   if (!fs.existsSync(skillSrc)) {
     console.error('Skill file not found at:', skillSrc);
     process.exit(1);
   }
 
-  fs.mkdirSync(skillDir, { recursive: true });
-  fs.copyFileSync(skillSrc, skillDst);
-  console.log(`Skill installed to: ${skillDst}`);
-  console.log('The terminal-visualizer skill is now available in Claude Code.');
+  try {
+    const installDir = path.resolve(path.dirname(thisFile), '..');
+    execSync(`npx skills add "${installDir}" --yes --global`, { stdio: 'inherit' });
+  } catch {
+    console.error('Failed to install skill via npx skills add');
+    process.exit(1);
+  }
 }
 
 function printUsage() {
