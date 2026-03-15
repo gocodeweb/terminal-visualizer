@@ -8,11 +8,11 @@ terminal-visualizer <<'EOF'
 EOF
 ```
 
-See `skill/SKILL.md` for full documentation of all 10 visualization types, color system, and routing logic.
+See `SKILL.md` for full documentation of all 10 visualization types, color system, and routing logic.
 
 ## Install
 
 ```bash
-npm install -g terminal-visualizer
+curl -fsSL https://raw.githubusercontent.com/gocodeweb/terminal-visualizer/main/install.sh | bash
 terminal-visualizer install-skill
 ```
