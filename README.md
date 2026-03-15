@@ -17,6 +17,18 @@ Or install the skill directly without the CLI:
 npx skills add gocodeweb/terminal-visualizer
 ```
 
+## Prompt Examples
+
+Just ask your AI agent naturally — the skill handles the rest:
+
+- "Visualize our API architecture"
+- "Show revenue by quarter"
+- "Compare React vs Vue vs Svelte"
+- "Draw the OAuth2 login flow"
+- "Show git commit activity as a heatmap"
+- "Timeline of the project milestones"
+- "Break down cloud spending by service"
+
 ## Usage
 
 Claude Code automatically uses the skill to visualize data. You can also invoke directly:
