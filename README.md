@@ -1,6 +1,6 @@
 # Terminal Visualizer
 
-Interactive terminal visualizations for AI coding agents. Pipe JSON, get a pixel-perfect interactive viewer in a split pane. No MCP server — just a CLI tool + skill. Triggered by prompts containing **"Visualize"**.
+Interactive terminal visualizations for AI coding agents. Pipe JSON, get a pixel-perfect interactive viewer in a split pane. No MCP server — just a CLI tool + skill. Triggered by prompts containing **"visual"** keywords (visualize, visualization, visual, etc.).
 
 ![Demo](demo.gif)
 
@@ -19,7 +19,7 @@ npx skills add gocodeweb/terminal-visualizer
 
 ## Prompt Examples
 
-Start your prompt with **"Visualize"** to trigger the skill:
+Use any **"visual"** keyword to trigger the skill:
 
 ```
 Visualize our API architecture

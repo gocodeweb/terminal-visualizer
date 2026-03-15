@@ -1,6 +1,6 @@
 ---
 name: terminal-visualizer
-description: Render interactive terminal visualizations. Only use when the user's prompt starts with or contains the word "Visualize" (e.g. "Visualize our API architecture", "Visualize revenue by quarter"). Do NOT trigger on other words like "chart", "diagram", "compare", or "show".
+description: Render interactive terminal visualizations. Only trigger when the user's prompt contains a "visual" keyword — visualize, visualization, visualizing, visual, visually (e.g. "Visualize our API architecture", "Create a visualization of revenue"). Do NOT trigger on unrelated words like "chart", "diagram", "compare", or "show".
 ---
 
 # Terminal Visualizer
@@ -15,7 +15,8 @@ npm install -g terminal-visualizer
 
 ## When to Use
 
-Only use `terminal-visualizer` when the user's prompt contains the word **"Visualize"**.
+Only use `terminal-visualizer` when the user's prompt contains a **"visual"** keyword:
+visualize, visualization, visualizing, visual, visually.
 Do NOT trigger on generic words like "chart", "diagram", "compare", or "show".
 
 ## How to Invoke
