@@ -2,6 +2,8 @@
 
 Interactive terminal visualizations for Claude Code. Pipe JSON, get a pixel-perfect interactive viewer in a split pane. No MCP server — just a CLI tool + Claude Code skill.
 
+![Demo](demo.gif)
+
 ## Install
 
 ```bash
