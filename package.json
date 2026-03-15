@@ -9,7 +9,7 @@
   },
   "files": [
     "build/",
-    "skill/"
+    "SKILL.md"
   ],
   "scripts": {
     "build": "tsc && chmod +x build/cli.js",

@@ -1,9 +1,17 @@
 ---
 name: terminal-visualizer
-description: Render interactive visualizations in the terminal — charts, diagrams, tables, grids, heatmaps, timelines, sequence diagrams. Use when spatial/visual representation helps explain data.
+description: Render interactive visualizations in the terminal — charts, diagrams, tables, grids, heatmaps, timelines, sequence diagrams. Use when the user asks to visualize, chart, diagram, or compare anything.
 ---
 
 # Terminal Visualizer
+
+## Prerequisites
+
+Requires `terminal-visualizer` CLI installed globally:
+
+```bash
+npm install -g terminal-visualizer
+```
 
 ## When to Use
 
