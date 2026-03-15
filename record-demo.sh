@@ -19,14 +19,17 @@ echo ""
 echo "Press Enter to start..."
 read
 
-# Get the window ID of the current terminal
-WINDOW_ID=$(osascript -e 'tell application "System Events" to get id of first window of (first process whose frontmost is true)' 2>/dev/null || echo "")
-
-# Start screen recording in background
+# Start screen recording with ffmpeg (capture main display, no audio)
 echo "Starting screen recording..."
-screencapture -v -C -G "$WINDOW_ID" "$SCREENCAST" &
+ffmpeg -y -f avfoundation -framerate 30 -i "Capture screen 0" -c:v libx264 -preset ultrafast -pix_fmt yuv420p "$SCREENCAST" </dev/null >/dev/null 2>/tmp/tv-ffmpeg.log &
 CAPTURE_PID=$!
 sleep 2
+if ! kill -0 $CAPTURE_PID 2>/dev/null; then
+  echo "[debug] ffmpeg failed to start! Log:"
+  cat /tmp/tv-ffmpeg.log
+  exit 1
+fi
+echo "[debug] ffmpeg recording (PID $CAPTURE_PID)"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Bar Chart — press q when done viewing"
@@ -71,16 +74,41 @@ sleep 1
 echo ""
 echo "Recording complete! Stopping capture..."
 
-# Stop screen recording
-kill $CAPTURE_PID 2>/dev/null
-wait $CAPTURE_PID 2>/dev/null
-sleep 2
+# Check if ffmpeg is still running
+echo "[debug] ffmpeg PID: $CAPTURE_PID"
+if kill -0 $CAPTURE_PID 2>/dev/null; then
+  echo "[debug] ffmpeg is running, sending quit command..."
+  # Send 'q' to ffmpeg's stdin to gracefully stop it
+  kill -INT $CAPTURE_PID 2>/dev/null
+  echo "[debug] Waiting for ffmpeg to exit (5s timeout)..."
+  # Timeout the wait so we don't hang forever
+  for i in $(seq 1 10); do
+    if ! kill -0 $CAPTURE_PID 2>/dev/null; then
+      echo "[debug] ffmpeg exited"
+      break
+    fi
+    sleep 0.5
+  done
+  # Force kill if still alive
+  if kill -0 $CAPTURE_PID 2>/dev/null; then
+    echo "[debug] ffmpeg still alive, force killing..."
+    kill -9 $CAPTURE_PID 2>/dev/null
+  fi
+else
+  echo "[debug] ffmpeg already exited (may have failed to start)"
+fi
+
+echo "[debug] Checking for MP4..."
+ls -lh "$SCREENCAST" 2>/dev/null || echo "[debug] MP4 not found!"
 
 # Convert MP4 to GIF
-echo "Converting to GIF..."
-ffmpeg -y -i "$SCREENCAST" \
-  -vf "fps=12,scale=800:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128[p];[s1][p]paletteuse=dither=bayer:bayer_scale=3" \
-  -loop 0 "$GIF_FILE" 2>/dev/null
-
-echo "Done! GIF saved to $GIF_FILE ($(du -h "$GIF_FILE" | cut -f1))"
-echo "Run: git add demo.gif && git commit -m 'Update demo GIF' && git push"
+if [ -f "$SCREENCAST" ]; then
+  echo "Converting to GIF..."
+  ffmpeg -y -i "$SCREENCAST" \
+    -vf "fps=12,scale=800:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128[p];[s1][p]paletteuse=dither=bayer:bayer_scale=3" \
+    -loop 0 "$GIF_FILE" 2>/dev/null
+  echo "Done! GIF saved to $GIF_FILE ($(du -h "$GIF_FILE" | cut -f1))"
+else
+  echo "ERROR: Screen recording failed — no MP4 was created."
+  echo "Try granting Screen Recording permission: System Settings > Privacy > Screen Recording > Terminal/Ghostty"
+fi
