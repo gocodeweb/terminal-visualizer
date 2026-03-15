@@ -1,5 +1,5 @@
 #!/bin/bash
-# Record a demo GIF of terminal-visualizer using macOS screen capture.
+# Record a demo GIF of terminal-visualizer by capturing the current terminal window.
 # Run this in your Ghostty/cmux terminal to capture the pixel-perfect rendering.
 #
 # Usage: bash record-demo.sh
@@ -12,24 +12,57 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 TV="$SCRIPT_DIR/build/cli.js"
 
 echo "This will:"
-echo "  1. Start a macOS screen recording of this window"
+echo "  1. Start a screen recording of THIS terminal window"
 echo "  2. Run 4 visualizations (press q after viewing each)"
 echo "  3. Stop recording and convert to GIF"
 echo ""
-echo "Press Enter to start..."
+
+# Get the terminal window bounds using AppleScript
+echo "Detecting terminal window bounds..."
+BOUNDS=$(osascript -e '
+tell application "System Events"
+  set frontApp to first process whose frontmost is true
+  set win to first window of frontApp
+  set {x, y} to position of win
+  set {w, h} to size of win
+  return (x as text) & " " & (y as text) & " " & (w as text) & " " & (h as text)
+end tell
+' 2>/dev/null)
+
+if [ -z "$BOUNDS" ]; then
+  echo "ERROR: Could not detect window bounds. Grant Accessibility permission in System Settings."
+  exit 1
+fi
+
+read WIN_X WIN_Y WIN_W WIN_H <<< "$BOUNDS"
+
+# Retina displays report logical pixels; ffmpeg captures physical pixels (2x)
+SCALE=$(osascript -e 'tell application "Finder" to get bounds of window of desktop' 2>/dev/null | head -1 || echo "")
+# Assume 2x Retina by default
+RETINA=2
+CROP_X=$((WIN_X * RETINA))
+CROP_Y=$((WIN_Y * RETINA))
+CROP_W=$((WIN_W * RETINA))
+CROP_H=$((WIN_H * RETINA))
+
+echo "Window: ${WIN_W}x${WIN_H} at (${WIN_X},${WIN_Y}), capture: ${CROP_W}x${CROP_H}"
+echo ""
+echo "Press Enter to start recording..."
 read
 
-# Start screen recording with ffmpeg (capture main display, no audio)
+# Record full screen, crop to terminal window in post-processing
 echo "Starting screen recording..."
-ffmpeg -y -f avfoundation -framerate 30 -i "Capture screen 0" -c:v libx264 -preset ultrafast -pix_fmt yuv420p "$SCREENCAST" </dev/null >/dev/null 2>/tmp/tv-ffmpeg.log &
+ffmpeg -y -f avfoundation -framerate 30 -i "Capture screen 0" \
+  -c:v libx264 -preset ultrafast -pix_fmt yuv420p \
+  "$SCREENCAST" </dev/null >/dev/null 2>/tmp/tv-ffmpeg.log &
 CAPTURE_PID=$!
 sleep 2
 if ! kill -0 $CAPTURE_PID 2>/dev/null; then
-  echo "[debug] ffmpeg failed to start! Log:"
+  echo "ERROR: ffmpeg failed to start:"
   cat /tmp/tv-ffmpeg.log
   exit 1
 fi
-echo "[debug] ffmpeg recording (PID $CAPTURE_PID)"
+echo "Recording... (PID $CAPTURE_PID)"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Bar Chart — press q when done viewing"
@@ -74,41 +107,28 @@ sleep 1
 echo ""
 echo "Recording complete! Stopping capture..."
 
-# Check if ffmpeg is still running
-echo "[debug] ffmpeg PID: $CAPTURE_PID"
+# Stop ffmpeg
 if kill -0 $CAPTURE_PID 2>/dev/null; then
-  echo "[debug] ffmpeg is running, sending quit command..."
-  # Send 'q' to ffmpeg's stdin to gracefully stop it
   kill -INT $CAPTURE_PID 2>/dev/null
-  echo "[debug] Waiting for ffmpeg to exit (5s timeout)..."
-  # Timeout the wait so we don't hang forever
   for i in $(seq 1 10); do
-    if ! kill -0 $CAPTURE_PID 2>/dev/null; then
-      echo "[debug] ffmpeg exited"
-      break
-    fi
+    kill -0 $CAPTURE_PID 2>/dev/null || break
     sleep 0.5
   done
   # Force kill if still alive
-  if kill -0 $CAPTURE_PID 2>/dev/null; then
-    echo "[debug] ffmpeg still alive, force killing..."
-    kill -9 $CAPTURE_PID 2>/dev/null
-  fi
-else
-  echo "[debug] ffmpeg already exited (may have failed to start)"
+  kill -0 $CAPTURE_PID 2>/dev/null && kill -9 $CAPTURE_PID 2>/dev/null
 fi
+wait $CAPTURE_PID 2>/dev/null || true
+sleep 1
 
-echo "[debug] Checking for MP4..."
-ls -lh "$SCREENCAST" 2>/dev/null || echo "[debug] MP4 not found!"
-
-# Convert MP4 to GIF
+# Convert MP4 to GIF, cropping to the terminal window
 if [ -f "$SCREENCAST" ]; then
-  echo "Converting to GIF..."
+  echo "Cropping to terminal window and converting to GIF..."
   ffmpeg -y -i "$SCREENCAST" \
-    -vf "fps=12,scale=800:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128[p];[s1][p]paletteuse=dither=bayer:bayer_scale=3" \
+    -vf "crop=${CROP_W}:${CROP_H}:${CROP_X}:${CROP_Y},fps=12,scale=800:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128[p];[s1][p]paletteuse=dither=bayer:bayer_scale=3" \
     -loop 0 "$GIF_FILE" 2>/dev/null
   echo "Done! GIF saved to $GIF_FILE ($(du -h "$GIF_FILE" | cut -f1))"
 else
   echo "ERROR: Screen recording failed — no MP4 was created."
-  echo "Try granting Screen Recording permission: System Settings > Privacy > Screen Recording > Terminal/Ghostty"
+  echo "Check /tmp/tv-ffmpeg.log for details."
+  echo "You may need to grant Screen Recording permission in System Settings."
 fi
