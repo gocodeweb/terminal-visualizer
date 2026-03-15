@@ -1,0 +1,28 @@
+{
+  "name": "terminal-visualizer",
+  "version": "1.0.0",
+  "description": "MCP server for interactive visualizations in Claude Code — pixel-perfect SVG graphics via Kitty protocol with Ink/blessed fallback",
+  "type": "module",
+  "main": "build/index.js",
+  "bin": "build/index.js",
+  "scripts": {
+    "build": "tsc && chmod +x build/index.js",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@inkjs/ui": "^2.0.0",
+    "@modelcontextprotocol/sdk": "^1.27.0",
+    "@resvg/resvg-js": "^2.6.2",
+    "blessed": "^0.1.81",
+    "blessed-contrib": "^4.11.0",
+    "ink": "^6.8.0",
+    "react": "^19.2.4",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/blessed": "^0.1.25",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.2.14",
+    "typescript": "^5.7.0"
+  }
+}
