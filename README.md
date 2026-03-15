@@ -1,175 +1,135 @@
 # Terminal Visualizer
 
-MCP server for Claude Code that renders interactive visualizations directly in the terminal. Opens a viewer in a split pane (cmux/tmux) where you can navigate elements and select them — selections feed back to Claude for follow-up exploration.
-
-## Rendering Backends
-
-The viewer auto-detects the best rendering backend for your terminal:
-
-### Pixel-Perfect (Kitty Graphics Protocol)
-
-Renders SVG→PNG images inline using the Kitty graphics protocol. A worker thread pre-renders all frames at startup so navigation is instant.
-
-| Terminal | Support |
-|----------|---------|
-| **Ghostty** | Full support |
-| **cmux** | Full support (Ghostty-based) |
-| **Kitty** | Full support (protocol creator) |
-| **WezTerm** | Full support |
-| **Konsole** (KDE) | Full support |
-| **Rio** | Full support |
-
-### Text-Based Fallback (Ink)
-
-React components rendered as rich text with Unicode characters and 256-color support.
-
-| Terminal | Support |
-|----------|---------|
-| **iTerm2** | Ink (React for CLI) |
-| **VS Code Terminal** | Ink (React for CLI) |
-| **Alacritty** | Ink (React for CLI) |
-| **Hyper** | Ink (React for CLI) |
-
-### Legacy Fallback (Blessed)
-
-For terminals without a split pane multiplexer, falls back to blessed TUI on `/dev/tty`.
-
-## Visualization Types
-
-| Type | Use case | Navigation |
-|------|----------|------------|
-| **bar-chart** | Distribution, ranking, comparisons | Left/Right between bars |
-| **line-chart** | Trends, time series, multi-series data | Left/Right between series |
-| **flow-diagram** | Architecture, pipelines, data flows | Arrow keys between nodes |
-| **tree** | Hierarchies, component structures, org charts | Up/Down, Enter to expand |
-| **table** | Comparisons, data grids, feature matrices | Up/Down between rows |
-| **grid** | Periodic tables, keyboard layouts, calendars, game boards | Arrow keys move spatially |
-| **timeline** | Gantt charts, project roadmaps, temporal ranges | Left/Right between items, Up/Down between lanes |
-| **heatmap** | Commit activity, correlation matrices, intensity grids | Arrow keys move between cells |
-| **stacked-bar-chart** | Composition breakdowns, revenue by segment, survey results | Left/Right between categories |
-| **sequence-diagram** | Login flows, API interactions, protocol exchanges | Up/Down between messages |
+Interactive terminal visualizations for Claude Code. Pipe JSON, get a pixel-perfect interactive viewer in a split pane. No MCP server — just a CLI tool + Claude Code skill.
 
 ## Install
 
 ```bash
-git clone https://github.com/gocodeweb/terminal-visualizer.git
-cd terminal-visualizer
-npm install
-npm run build
+npm install -g terminal-visualizer
+terminal-visualizer install-skill    # register Claude Code skill
 ```
 
-### Register with Claude Code
+Or use with npx:
 
 ```bash
-claude mcp add terminal-visualizer -- node /path/to/terminal-visualizer/build/index.js
+npx terminal-visualizer install-skill
 ```
+
+## Usage
+
+Claude Code automatically uses the skill to visualize data. You can also invoke directly:
+
+```bash
+# Interactive (opens split pane viewer)
+terminal-visualizer <<'EOF'
+{"type": "heatmap", "title": "Commits", "xLabels": ["Mon","Tue","Wed"], "yLabels": ["9am","12pm","5pm"], "data": [[5,12,8],[2,18,6],[7,4,15]], "colorRamp": "green"}
+EOF
+
+# Static image (inline in terminal)
+terminal-visualizer --static < data.json
+
+# From a file
+terminal-visualizer --file visualization.json
+```
+
+## Rendering Backends
+
+Auto-detects the best backend for your terminal:
+
+| Terminal | Backend | Quality |
+|----------|---------|---------|
+| **Ghostty / cmux** | Kitty graphics (SVG→PNG) | Pixel-perfect |
+| **Kitty** | Kitty graphics (SVG→PNG) | Pixel-perfect |
+| **WezTerm** | Kitty graphics (SVG→PNG) | Pixel-perfect |
+| **Konsole / Rio** | Kitty graphics (SVG→PNG) | Pixel-perfect |
+| **iTerm2** | Ink (React for CLI) | Rich text + Unicode |
+| **VS Code / Alacritty** | Ink (React for CLI) | Rich text + Unicode |
+| **Other** | Blessed TUI | ASCII art fallback |
+
+Split pane support:
+
+| Environment | Method |
+|-------------|--------|
+| **cmux** (Ghostty) | `cmux new-split right` |
+| **tmux** | `tmux split-window -h` |
+| **Other** | `/dev/tty` overlay |
+
+## 10 Visualization Types
+
+| Type | Use case |
+|------|----------|
+| **bar-chart** | Distribution, ranking, comparisons |
+| **line-chart** | Trends, time series |
+| **flow-diagram** | Architecture, pipelines, data flows |
+| **tree** | Hierarchies, component structures |
+| **table** | Comparisons, data grids |
+| **grid** | Periodic tables, keyboard layouts, game boards |
+| **timeline** | Gantt charts, project roadmaps |
+| **heatmap** | Commit activity, correlation matrices |
+| **stacked-bar-chart** | Composition breakdowns |
+| **sequence-diagram** | API flows, protocol exchanges |
+
+See `skill/SKILL.md` for full JSON schemas and examples.
 
 ## How It Works
 
-1. You ask Claude to visualize something ("show me the architecture", "compare these frameworks")
-2. Claude generates structured data and calls the `visualize` tool
-3. A viewer opens in a **split pane** beside Claude Code
-4. Navigate with arrow keys, select with Enter, quit with q
-5. Your selection returns to Claude, which can drill deeper
+```
+Claude Code → Bash tool → terminal-visualizer <<'EOF' ... EOF
+                              ↓
+                  Auto-detect terminal capabilities
+                              ↓
+              ┌─── Kitty? → SVG→PNG pixel graphics
+              │              Worker thread pre-renders all frames
+              │              Instant navigation
+              │
+              └─── Other → Ink (React) or Blessed text UI
+                              ↓
+              Opens in split pane (cmux/tmux)
+              User navigates with arrow keys
+              Enter to select, q to quit
+                              ↓
+              Selection returned as Bash output
+              Claude reads it and can drill deeper
+```
 
-### Split Pane Support
+## CLI Reference
 
-| Environment | Rendering |
-|-------------|-----------|
-| **cmux** (Ghostty-based) | `cmux new-split right` — native split pane |
-| **tmux** | `tmux split-window -h` — horizontal split |
-| **Other terminals** | `/dev/tty` alternate screen buffer fallback |
+```
+terminal-visualizer <<'EOF'    # pipe JSON via heredoc
+terminal-visualizer --file f   # read from file
+terminal-visualizer --static   # render inline image, no interaction
+terminal-visualizer --json     # output selection as JSON
+terminal-visualizer install-skill  # register Claude Code skill
+terminal-visualizer --help
+terminal-visualizer --version
+```
 
-### Static Mode
-
-Set `interactive: false` to render as an image instead of a TUI:
-- **Kitty-capable terminals**: Inline PNG via Kitty protocol
-- **iTerm2 / WezTerm**: Inline image via iTerm2 protocol
-- **Other**: SVG saved to `visualizations/` directory
+Aliases: `viz` (shorthand for `terminal-visualizer`)
 
 ## Architecture
 
 ```
-Claude Code
-  ↓ MCP tool call
-MCP Server (src/index.ts)
-  ↓ spawns split pane
-Viewer (src/viewer.ts)
-  ↓ auto-detects terminal
-  ├── Kitty? → SVG→PNG pixel graphics (src/tui/kitty-viewer.ts)
-  │            Worker thread pre-renders all frames
-  │            resvg-js for SVG→PNG conversion
-  │            Kitty protocol for inline images
-  │
-  └── Other → Ink React components (src/ink/InkViewer.tsx)
-               10 visualization components
-               Flexbox layout via Yoga
-               256-color + Unicode
-```
-
-## Project Structure
-
-```
 terminal-visualizer/
 ├── src/
-│   ├── index.ts                  # MCP server — registers tools
-│   ├── viewer.ts                 # Viewer entry — Kitty or Ink based on terminal
-│   ├── render-worker.ts          # Worker thread for background SVG→PNG rendering
-│   ├── types.ts                  # Visualization type definitions
-│   ├── utils.ts                  # Terminal detection, file management
+│   ├── cli.ts                    # CLI entrypoint
+│   ├── viewer.ts                 # Viewer (Kitty pixel or Ink fallback)
+│   ├── render-worker.ts          # Worker thread for SVG→PNG pre-rendering
+│   ├── types.ts                  # 10 visualization type definitions
 │   ├── tui/
 │   │   ├── screen.ts             # Split pane orchestration (cmux/tmux/tty)
-│   │   ├── kitty-viewer.ts       # Kitty pixel viewer with worker pre-rendering
-│   │   ├── render-bar-chart.ts   # Blessed fallback renderers (10 types)
-│   │   ├── render-line-chart.ts
-│   │   ├── render-table.ts
-│   │   ├── render-tree.ts
-│   │   ├── render-flow-diagram.ts
-│   │   ├── render-grid.ts
-│   │   ├── render-timeline.ts
-│   │   ├── render-heatmap.ts
-│   │   ├── render-stacked-bar-chart.ts
-│   │   ├── render-sequence-diagram.ts
-│   │   └── theme.ts              # 9-color ramp → ANSI 256
+│   │   ├── kitty-viewer.ts       # Kitty pixel viewer
+│   │   ├── render-*.ts           # 10 blessed TUI fallback renderers
+│   │   └── theme.ts              # 9-color ramp
 │   ├── ink/
-│   │   ├── InkViewer.tsx         # Main Ink app with keyboard navigation
-│   │   ├── InkBarChart.tsx       # Ink renderers (10 types)
-│   │   ├── InkLineChart.tsx
-│   │   ├── InkTable.tsx
-│   │   ├── InkTree.tsx
-│   │   ├── InkFlowDiagram.tsx
-│   │   ├── InkGrid.tsx
-│   │   ├── InkTimeline.tsx
-│   │   ├── InkHeatmap.tsx
-│   │   ├── InkStackedBar.tsx
-│   │   ├── InkSequenceDiagram.tsx
+│   │   ├── InkViewer.tsx         # Main Ink app
+│   │   ├── Ink*.tsx              # 10 Ink React components
 │   │   └── theme.ts
 │   └── image/
-│       ├── svg-renderer.ts       # SVG generation for all 10 types + highlight
-│       ├── kitty-renderer.ts     # Kitty protocol + resvg-js SVG→PNG
-│       └── terminal-image.ts     # iTerm2/Kitty/Sixel image protocols
-├── CLAUDE.md                     # Instructions for Claude (design system)
-├── package.json
-└── tsconfig.json
+│       ├── svg-renderer.ts       # SVG generation + highlight
+│       ├── kitty-renderer.ts     # Kitty protocol + resvg-js
+│       └── terminal-image.ts     # iTerm2/Kitty/Sixel protocols
+├── skill/
+│   └── SKILL.md                  # Claude Code skill definition
+├── CLAUDE.md
+└── package.json
 ```
-
-## Tools
-
-### `visualize`
-
-Renders a visualization. Parameters:
-- `visualization` — structured data (see CLAUDE.md for schemas)
-- `interactive` — `true` (default) opens interactive viewer, `false` renders static image
-
-### `list_visualizations`
-
-Lists previously saved visualizations from the `visualizations/` directory.
-
-## Design Decisions
-
-- **Structured data, not HTML** — TUI widgets need data, not markup. Structured types map to both SVG images and React/blessed components.
-- **Split pane rendering** — MCP's stdin/stdout carry JSON-RPC. Rendering in a separate pane avoids conflicts with Claude Code's terminal.
-- **Three-tier rendering** — Kitty pixel graphics (best quality) → Ink React (good quality) → Blessed TUI (basic). Auto-detects the best option.
-- **Worker thread pre-rendering** — SVG→PNG takes ~60ms per frame. A worker thread pre-renders all frames at startup so navigation is instant.
-- **Selection as tool result** — When the user selects an element, it returns as the MCP tool result. Claude receives it and can generate follow-ups.
-- **9-color design system** — Consistent palette across all visualization types.
