@@ -132,7 +132,7 @@ function installSkill() {
 
   try {
     const installDir = path.resolve(path.dirname(thisFile), '..');
-    execSync(`npx skills add "${installDir}" --yes --global`, { stdio: 'inherit' });
+    execSync(`npx skills add "${installDir}"`, { stdio: 'inherit' });
   } catch {
     console.error('Failed to install skill via npx skills add');
     process.exit(1);
