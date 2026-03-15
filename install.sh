@@ -1,5 +1,6 @@
 #!/bin/bash
 # Install terminal-visualizer globally from GitHub
+# Usage: curl -fsSL https://raw.githubusercontent.com/.../install.sh | bash
 set -e
 
 REPO="https://github.com/gocodeweb/terminal-visualizer.git"
@@ -14,28 +15,6 @@ else
   git clone "$REPO" "$INSTALL_DIR"
 fi
 
+# Run the repo's own setup (immune to CDN caching of this script)
 cd "$INSTALL_DIR"
-npm install
-npm run build
-npm prune --production
-
-# Create symlinks in a directory that's on PATH
-BIN_DIR="/usr/local/bin"
-if [ ! -w "$BIN_DIR" ]; then
-  # Fall back to ~/.local/bin (no sudo needed)
-  BIN_DIR="$HOME/.local/bin"
-  mkdir -p "$BIN_DIR"
-fi
-ln -sf "$INSTALL_DIR/build/cli.js" "$BIN_DIR/terminal-visualizer"
-ln -sf "$INSTALL_DIR/build/cli.js" "$BIN_DIR/viz"
-
-# Ensure BIN_DIR is on PATH
-if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
-  echo ""
-  echo "NOTE: Add $BIN_DIR to your PATH:"
-  echo "  export PATH=\"$BIN_DIR:\$PATH\""
-fi
-
-echo ""
-echo "terminal-visualizer installed successfully!"
-echo "Run: terminal-visualizer install-skill"
+bash setup.sh
