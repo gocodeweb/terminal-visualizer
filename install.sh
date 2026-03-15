@@ -15,8 +15,9 @@ else
 fi
 
 cd "$INSTALL_DIR"
-npm install --production
+npm install
 npm run build
+npm prune --production
 
 # Create symlinks in a directory that's on PATH
 BIN_DIR="/usr/local/bin"
