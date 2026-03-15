@@ -1,6 +1,6 @@
 # Terminal Visualizer
 
-Use `terminal-visualizer` CLI to render interactive visualizations. Pipe JSON via Bash:
+Use `terminal-visualizer` CLI to render interactive visualizations. Only trigger when the user's prompt contains the word **"Visualize"**. Pipe JSON via Bash:
 
 ```bash
 terminal-visualizer <<'EOF'

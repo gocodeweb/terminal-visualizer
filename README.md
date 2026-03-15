@@ -1,6 +1,6 @@
 # Terminal Visualizer
 
-Interactive terminal visualizations for Claude Code. Pipe JSON, get a pixel-perfect interactive viewer in a split pane. No MCP server — just a CLI tool + Claude Code skill.
+Interactive terminal visualizations for AI coding agents. Pipe JSON, get a pixel-perfect interactive viewer in a split pane. No MCP server — just a CLI tool + skill. Triggered by prompts containing **"Visualize"**.
 
 ![Demo](demo.gif)
 
@@ -19,28 +19,28 @@ npx skills add gocodeweb/terminal-visualizer
 
 ## Prompt Examples
 
-Just ask your AI agent naturally — the skill handles the rest:
+Start your prompt with **"Visualize"** to trigger the skill:
 
 ```
 Visualize our API architecture
 ```
 ```
-Show revenue by quarter
+Visualize revenue by quarter
 ```
 ```
-Compare React vs Vue vs Svelte
+Visualize React vs Vue vs Svelte
 ```
 ```
-Draw the OAuth2 login flow
+Visualize the OAuth2 login flow
 ```
 ```
-Show git commit activity as a heatmap
+Visualize git commit activity
 ```
 ```
-Timeline of the project milestones
+Visualize project milestones
 ```
 ```
-Break down cloud spending by service
+Visualize cloud spending by service
 ```
 
 ## Usage

@@ -1,6 +1,6 @@
 ---
 name: terminal-visualizer
-description: Render interactive visualizations in the terminal — charts, diagrams, tables, grids, heatmaps, timelines, sequence diagrams. Use when the user asks to visualize, chart, diagram, or compare anything.
+description: Render interactive terminal visualizations. Only use when the user's prompt starts with or contains the word "Visualize" (e.g. "Visualize our API architecture", "Visualize revenue by quarter"). Do NOT trigger on other words like "chart", "diagram", "compare", or "show".
 ---
 
 # Terminal Visualizer
@@ -15,10 +15,8 @@ npm install -g terminal-visualizer
 
 ## When to Use
 
-Use `terminal-visualizer` when the user asks for:
-diagrams, charts, flowcharts, architecture overviews, comparisons,
-data displays, hierarchies, process flows, or when spatial relationships
-would explain a concept better than text.
+Only use `terminal-visualizer` when the user's prompt contains the word **"Visualize"**.
+Do NOT trigger on generic words like "chart", "diagram", "compare", or "show".
 
 ## How to Invoke
 
@@ -106,16 +104,16 @@ Assign by meaning: blue=info, green=success, amber=warning, red=danger, purple=p
 
 | Request Pattern | Type |
 |---|---|
-| "How does X work?" | flow-diagram |
-| "Components of..." | tree |
-| "Compare X vs Y" | table |
-| "Show the data/stats" | bar-chart or line-chart |
-| "Architecture of..." | flow-diagram |
-| "Timeline / Gantt" | timeline |
-| "Activity grid" | heatmap |
-| "Breakdown by group" | stacked-bar-chart |
-| "Message flow" | sequence-diagram |
-| "Periodic table / map" | grid |
+| "Visualize how X works" | flow-diagram |
+| "Visualize components of..." | tree |
+| "Visualize X vs Y" | table |
+| "Visualize the data/stats" | bar-chart or line-chart |
+| "Visualize the architecture" | flow-diagram |
+| "Visualize the timeline" | timeline |
+| "Visualize activity" | heatmap |
+| "Visualize breakdown by group" | stacked-bar-chart |
+| "Visualize the message flow" | sequence-diagram |
+| "Visualize the periodic table" | grid |
 
 ## Guidelines
 
