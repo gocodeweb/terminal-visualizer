@@ -1,17 +1,9 @@
 ---
 name: terminal-visualizer
-description: Render interactive terminal visualizations. Only trigger when the user's prompt contains a "visual" keyword — visualize, visualization, visualizing, visual, visually (e.g. "Visualize our API architecture", "Create a visualization of revenue"). Do NOT trigger on unrelated words like "chart", "diagram", "compare", or "show".
+description: "Render interactive terminal visualizations including bar charts, line charts, flow diagrams, trees, tables, grids, timelines, heatmaps, stacked bar charts, and sequence diagrams. Use when the user's prompt contains a 'visual' keyword — visualize, visualization, visualizing, visual, visually (e.g. 'Visualize our API architecture', 'Create a visualization of revenue'). Do NOT trigger on unrelated words like 'chart', 'diagram', 'compare', or 'show'."
 ---
 
 # Terminal Visualizer
-
-## Prerequisites
-
-Requires `terminal-visualizer` CLI installed globally:
-
-```bash
-npm install -g terminal-visualizer
-```
 
 ## When to Use
 
@@ -19,9 +11,11 @@ Only use `terminal-visualizer` when the user's prompt contains a **"visual"** ke
 visualize, visualization, visualizing, visual, visually.
 Do NOT trigger on generic words like "chart", "diagram", "compare", or "show".
 
-## How to Invoke
+## Workflow
 
-Pipe JSON to the CLI via the Bash tool. Use a heredoc for safe JSON passing:
+1. **Validate prerequisites**: Ensure `terminal-visualizer` is installed (`which terminal-visualizer`). If missing, run `npm install -g terminal-visualizer`.
+2. **Build JSON**: Construct a JSON object with required `type` and `title` fields, plus type-specific data. See common types below and [TYPES.md](TYPES.md) for all 10 schemas.
+3. **Invoke**: Pipe JSON via heredoc to the CLI through the Bash tool:
 
 ```bash
 terminal-visualizer <<'EOF'
@@ -36,18 +30,14 @@ terminal-visualizer <<'EOF'
 EOF
 ```
 
-The CLI opens an interactive viewer in a split pane. The user navigates with arrow keys, selects with Enter, or quits with q. The selection is returned as text in the Bash output — use it to generate follow-up visualizations.
+4. **Handle output**: The CLI opens an interactive split-pane viewer. The user navigates with arrow keys, selects with Enter, or quits with q. The selection is returned as Bash output — use it for follow-up visualizations.
+5. **On failure**: If the CLI exits non-zero, check stderr. Fix malformed JSON or missing fields, then retry.
 
-## Visualization Types
+## Common Visualization Types
 
 ### bar-chart
 ```json
 {"type": "bar-chart", "title": "...", "data": [{"label": "Q1", "value": 120, "color": "blue"}]}
-```
-
-### line-chart
-```json
-{"type": "line-chart", "title": "...", "series": [{"name": "Mobile", "data": [100, 150], "color": "blue"}], "labels": ["Jan", "Feb"]}
 ```
 
 ### flow-diagram
@@ -55,45 +45,12 @@ The CLI opens an interactive viewer in a split pane. The user navigates with arr
 {"type": "flow-diagram", "title": "...", "nodes": [{"id": "api", "label": "API", "description": "Routes requests", "color": "blue"}], "edges": [{"from": "api", "to": "db", "label": "query"}]}
 ```
 
-### tree
-```json
-{"type": "tree", "title": "...", "data": {"label": "Root", "children": [{"label": "Child A"}, {"label": "Child B", "children": [{"label": "Grandchild"}]}]}}
-```
-
 ### table
 ```json
 {"type": "table", "title": "...", "headers": ["Name", "Score"], "rows": [["Alice", 95], ["Bob", 87]]}
 ```
 
-### grid
-2D spatial layouts — periodic tables, keyboard maps, game boards.
-```json
-{"type": "grid", "title": "...", "cells": [{"row": 0, "col": 0, "label": "H", "sublabel": "1", "description": "Hydrogen", "color": "coral"}], "legend": [{"color": "coral", "label": "Nonmetal"}]}
-```
-
-### timeline
-Gantt-style temporal ranges with parallel lanes.
-```json
-{"type": "timeline", "title": "...", "lanes": [{"label": "Backend", "items": [{"label": "API", "start": 0, "end": 3, "color": "blue"}]}], "axisLabels": ["W1", "W2", "W3"]}
-```
-
-### heatmap
-2D intensity matrix with color gradient.
-```json
-{"type": "heatmap", "title": "...", "xLabels": ["Mon", "Tue"], "yLabels": ["9am", "12pm"], "data": [[5, 12], [8, 3]], "colorRamp": "green"}
-```
-
-### stacked-bar-chart
-Compositional bars showing segment breakdown.
-```json
-{"type": "stacked-bar-chart", "title": "...", "categories": ["Q1", "Q2"], "segments": [{"name": "SaaS", "values": [80, 110], "color": "blue"}, {"name": "Services", "values": [40, 55], "color": "teal"}]}
-```
-
-### sequence-diagram
-Actor-to-actor message flows.
-```json
-{"type": "sequence-diagram", "title": "...", "actors": [{"id": "client", "label": "Client", "color": "blue"}, {"id": "api", "label": "API", "color": "teal"}], "messages": [{"from": "client", "to": "api", "label": "POST /login"}, {"from": "api", "to": "client", "label": "200 JWT", "style": "dashed"}]}
-```
+See [TYPES.md](TYPES.md) for all 10 visualization types with full JSON schemas.
 
 ## Color Ramps
 
